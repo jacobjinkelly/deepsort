@@ -1,6 +1,9 @@
 # Data #
-/data
+/data/data.txt
 
 # pycache #
 /__pycache__
 */__pycache__
+
+# OS Generated Files #
+.DS_Store
