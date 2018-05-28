@@ -18,6 +18,8 @@ training_pairs = [tensors_from_pair(random.choice(pairs))
 hidden_size = 256
 encoder = EncoderRNN(data_dim, hidden_size).to(device)
 attn_decoder = AttnDecoderRNN(hidden_size, data_dim, dropout_p=0.1).to(device)
+encoder_optim = optim.SGD(encoder.parameters(), lr=learning_rate)
+decoder_optim = optim.SGD(decoder.parameters(), lr=learning_rate)
 def run():
-    train_iters(encoder, attn_decoder, training_pairs, n_iters,
-                                            print_every=1000, plot_every=10)
+    train_iters(encoder, attn_decoder, encoder_optim, decoder_optim,
+                    training_pairs, n_iters, print_every=1000, plot_every=10)
