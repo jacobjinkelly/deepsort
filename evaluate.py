@@ -2,7 +2,7 @@
 """
 import random
 import torch
-from utils import device, SOS_token, EOS_token
+from utils import device, SOS_token, EOS_token, MAX_LENGTH
 
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     with torch.no_grad():
