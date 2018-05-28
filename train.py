@@ -6,6 +6,7 @@ from torch import optim
 from utils import device, MAX_LENGTH, SOS_token, EOS_token, time_since
 import time
 import random
+from visual import show_plot
 
 teacher_forcing_ratio = 0.5
 
