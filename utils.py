@@ -28,10 +28,12 @@ def time_since(since, percent):
     return '%s (- %s)' % (as_minutes(s), as_minutes(rs))
 
 def save_checkpoint(state, iter, save_every):
-    old_file_name = "checkpoints/" + str(iter - 6 * save_every) + ".cpkt"
-    current_file_name = "checkpoints/" + str(iter) + ".cpkt"
+    old_file_name = "checkpoints/" + str(iter - 6 * save_every) + ".ckpt"
+    current_file_name = "checkpoints/" + str(iter) + ".ckpt"
     if os.path.isfile(old_file_name):
         os.remove(old_file_name)
+    if not os.path.isdir("checkpoints"):
+        os.mkdir("checkpoints")
     torch.save(state, current_file_name)
 
 def load_checkpoint():
@@ -39,9 +41,14 @@ def load_checkpoint():
         max_iter = -1
         max_iter_file = ""
         for file_name in os.listdir("checkpoints"):
-            iter = file_name.split(".")[0]
+            try:
+                iter = int(file_name.split(".")[0])
+            except ValueError:
+                print("A file other than a checkpoint appears to be in the " +
+                        "<checkpoints> folder; please remove it")
             if file_name.endswith("ckpt") and iter > max_iter:
                 max_iter = iter
                 max_iter_file = file_name
         if max_iter > 0:
+            print("Loading checkpoint file...")
             return torch.load("checkpoints/" + max_iter_file)
