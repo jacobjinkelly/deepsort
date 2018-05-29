@@ -1,8 +1,11 @@
 # Data #
-/data/data.txt
+data/data.txt
+
+# Checkpoint Files #
+checkpoints/
 
 # pycache #
-/__pycache__
+__pycache__
 */__pycache__
 
 # OS Generated Files #
