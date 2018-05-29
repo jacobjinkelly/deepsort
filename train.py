@@ -2,8 +2,7 @@
 """
 import torch
 import torch.nn as nn
-from torch import optim
-from utils import device, MAX_LENGTH, SOS_token, EOS_token, time_since,
+from utils import device, MAX_LENGTH, SOS_token, EOS_token, time_since, \
                                                 save_checkpoint, load_checkpoint
 import time
 import random
@@ -11,12 +10,12 @@ from visual import show_plot
 
 teacher_forcing_ratio = 0.5
 
-def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer,
-                    decoder_optimizer, criterion, max_length=MAX_LENGTH):
+def train(input_tensor, target_tensor, encoder, decoder, encoder_optim,
+                            decoder_optim, criterion, max_length=MAX_LENGTH):
     encoder_hidden = encoder.init_hidden()
 
-    encoder_optimizer.zero_grad()
-    decoder_optimizer.zero_grad()
+    encoder_optim.zero_grad()
+    decoder_optim.zero_grad()
 
     input_length = input_tensor.size(0)
     target_length = target_tensor.size(0)
@@ -59,15 +58,15 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer,
 
     loss.backward()
 
-    encoder_optimizer.step()
-    decoder_optimizer.step()
+    encoder_optim.step()
+    decoder_optim.step()
 
     return loss.item() / target_length
 
 
 def train_iters(encoder, decoder, encoder_optim, decoder_optim,
-                training_pairs, n_iters, print_every=1000, plot_every=100,
-                save_every=1000, learning_rate=0.01):
+                training_pairs, n_iters, print_every=500, plot_every=10,
+                save_every=1000):
 
     checkpoint = load_checkpoint()
     if checkpoint:
@@ -93,7 +92,7 @@ def train_iters(encoder, decoder, encoder_optim, decoder_optim,
         input_tensor, target_tensor = training_pairs[iter - 1]
 
         loss = train(input_tensor, target_tensor, encoder, decoder,
-            encoder_optimizer, decoder_optimizer, criterion)
+                                        encoder_optim, decoder_optim, criterion)
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -116,8 +115,8 @@ def train_iters(encoder, decoder, encoder_optim, decoder_optim,
                 "plot_loss_total": plot_loss_total,
                 "encoder": encoder.state_dict(),
                 "decoder": decoder.state_dict(),
-                "encoder_optimize": encoder_optimizer.state_dict(),
-                "decoder_optimizer": decoder_optimizer.state_dict(),
+                "encoder_optim": encoder_optim.state_dict(),
+                "decoder_optim": decoder_optim.state_dict(),
             }, iter, save_every)
 
     show_plot(plot_losses)
