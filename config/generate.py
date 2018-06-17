@@ -9,5 +9,9 @@ parser.add_argument("--max_val", type=int, help="the maximum value in an array")
 parser.add_argument("--min_length", type=int, help="the min size of array")
 parser.add_argument("--max_length", type=int, help="the max size of array")
 
+
 def get_config():
+    """
+    Get command line arguments.
+    """
     return parser.parse_known_args()
