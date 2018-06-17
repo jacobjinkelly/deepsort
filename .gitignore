@@ -4,9 +4,12 @@ data/
 # Checkpoint Files #
 checkpoints/
 
-# pycache #
+# Compiled Python #
 __pycache__
 */__pycache__
+
+# IDE Generated Files #
+.idea/
 
 # OS Generated Files #
 .DS_Store
