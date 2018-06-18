@@ -42,17 +42,15 @@ def time_since(since, percent):
     return '%s (- %s)' % (as_minutes(s), as_minutes(rs))
 
 
-def save_checkpoint(state, iteration, save_every):
+def save_checkpoint(state):
     """
     Save a checkpoint of the current model weights, deleting old ones.
     """
-    old_file_name = "checkpoints/" + str(iteration - 6 * save_every) + ".ckpt"
-    current_file_name = "checkpoints/" + str(iteration) + ".ckpt"
-    if os.path.isfile(old_file_name):
-        os.remove(old_file_name)
+    epoch, batch = state["epoch"], state["batch"]
+    file_name = "checkpoints/" + "e" + str(epoch) + "b" + str(batch) + ".ckpt"
     if not os.path.isdir("checkpoints"):
         os.mkdir("checkpoints")
-    torch.save(state, current_file_name)
+    torch.save(state, file_name)
 
 
 def load_checkpoint():
