@@ -2,20 +2,29 @@
 """
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import numpy as np
+
 from evaluate import evaluate
 
 
-def show_plot(points):
+def show_plot(points, save=False):
+    """
+    Show a scatter plot of the given points.
+    """
     plt.figure()
     fig, ax = plt.subplots()
     # this locator puts ticks at regular intervals
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
+    if save:
+        plt.savefig("imgs/plot.jpg")
     plt.show()
 
+
 def show_attention(input_sentence, output_words, attentions):
+    """
+    Render a visualization of the attention mechanism on the inputs.
+    """
     # Set up figure with colorbar
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -33,9 +42,13 @@ def show_attention(input_sentence, output_words, attentions):
 
     plt.show()
 
-def evaluate_and_show_attention(input_sentence):
+
+def evaluate_and_show_attention(input_sentence, encoder, decoder):
+    """
+    Do inference on an input, and display a visualization of the attention mechanism.
+    """
     output_words, attentions = evaluate(
-        encoder1, attn_decoder1, input_sentence)
+        encoder, decoder, input_sentence)
     print('input =', input_sentence)
     print('output =', ' '.join(output_words))
     show_attention(input_sentence, output_words, attentions)
