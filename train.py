@@ -14,61 +14,64 @@ from visual import show_plot
 
 # ignore noncallable/unresolvedreferences errors for torch.tensor, torch.unsqueeze respectively (bug in PyTorch)
 # noinspection PyCallingNonCallable,PyUnresolvedReferences
-def train(pairs, encoder, decoder, encoder_optim, decoder_optim, is_ptr, criterion, teacher_force_ratio, grad_clip):
+def train(training_pairs, encoder, decoder, encoder_optim, decoder_optim, is_ptr, criterion, teacher_force_ratio,
+          grad_clip):
     """
     One step in the training loop.
     """
+    batch_size = len(training_pairs)
+
     encoder_hidden = encoder.init_hidden()
-
-    encoder_optim.zero_grad()
-    decoder_optim.zero_grad()
-
-    input_length = input_tensor.size(0)
-    target_length = target_tensor.size(0)
-
-    encoder_outputs = torch.zeros(input_length, encoder.hidden_dim, device=device)
+    encoder_optim.zero_grad(), decoder_optim.zero_grad()
 
     loss = 0
 
-    for i in range(input_length):
-        encoder_output, encoder_hidden = encoder(input_tensor[i], encoder_hidden)
-        encoder_outputs[i] = encoder_output[0, 0]
+    for i in range(batch_size):
+        input_tensor, target_tensor = training_pairs[i]
+        input_length, target_length = input_tensor.size(0), target_tensor.size(0)
 
-    decoder_input, decoder_hidden = torch.tensor([[SOS_token]], device=device), encoder_hidden
+        encoder_outputs = torch.zeros(input_length, encoder.hidden_dim, device=device)
 
-    teacher_force = random.random() < teacher_force_ratio
+        for j in range(input_length):
+            encoder_output, encoder_hidden = encoder(input_tensor[j], encoder_hidden)
+            encoder_outputs[j] = encoder_output[0, 0]
 
-    for i in range(target_length):
-        args = (decoder_input, decoder_hidden, encoder_outputs)
-        if is_ptr:
-            args += (input_tensor,)
-        decoder_output, decoder_hidden, _ = decoder(*args)
-        if not teacher_force:
-            topv, topi = decoder_output.topk(1)
-            # detach from history as input
-            decoder_input = topi.squeeze().detach()
-        else:
-            decoder_input = target_tensor[i]
-        loss += criterion(decoder_output, target_tensor[i])
+        decoder_input, decoder_hidden = torch.tensor([[SOS_token]], device=device), encoder_hidden
 
-        if not teacher_force and decoder_input.item() == EOS_token:
-            break
+        teacher_force = random.random() < teacher_force_ratio
 
+        for j in range(target_length):
+            args = (decoder_input, decoder_hidden, encoder_outputs)
+            if is_ptr:
+                args += (input_tensor,)
+            decoder_output, decoder_hidden, _ = decoder(*args)
+            if not teacher_force:
+                topv, topi = decoder_output.topk(1)
+                # detach from history as input
+                decoder_input = topi.squeeze().detach()
+            else:
+                decoder_input = target_tensor[j]
+            loss += criterion(decoder_output, target_tensor[j])
+
+            if not teacher_force and decoder_input.item() == EOS_token:
+                break
+
+    loss /= batch_size
     loss.backward()
 
     # clip gradients (to avoid exploding gradients)
-    nn.utils.clip_grad_norm(encoder.parameters(), grad_clip), nn.utils.clip_grad_norm(decoder.parameters(), grad_clip)
+    nn.utils.clip_grad_norm_(encoder.parameters(), grad_clip), nn.utils.clip_grad_norm(decoder.parameters(), grad_clip)
 
     encoder_optim.step()
     decoder_optim.step()
 
-    return loss.item() / target_length
+    return loss.item() / batch_size
 
 
 # surpress warning of math.floor() returning a float. In Python 3 returns it returns an int.
 # noinspection PyTypeChecker
 def train_iters(encoder, decoder, optim, optim_params, weight_init, grad_clip, is_ptr, training_pairs, n_epochs,
-                batch_size, teacher_force_ratio=0.5, print_every=500, plot_every=10, save_every=1000):
+                batch_size, teacher_force_ratio, print_every, plot_every, save_every):
     """
     The training loop.
     """
@@ -113,13 +116,14 @@ def train_iters(encoder, decoder, optim, optim_params, weight_init, grad_clip, i
             print_loss_total += loss
             plot_loss_total += loss
 
-            current_iter = math.ceil(size / batch_size) * epoch + batch
+            current_iter = math.ceil(size / batch_size) * epoch + batch + 1
 
             if current_iter % print_every == 0:
                 print_loss_avg = print_loss_total / print_every
                 print_loss_total = 0
-                print('%s (%d %d%%) %.4f' % (time_since(start, current_iter / n_iters),
-                                             current_iter, current_iter / n_iters * 100, print_loss_avg))
+                print('%s (epoch: %d batch: %d %d%%) %.4f' % (time_since(start, current_iter / n_iters),
+                                                              epoch, batch, current_iter / n_iters * 100,
+                                                              print_loss_avg))
 
             if current_iter % plot_every == 0:
                 plot_loss_avg = plot_loss_total / plot_every
@@ -139,4 +143,4 @@ def train_iters(encoder, decoder, optim, optim_params, weight_init, grad_clip, i
                     "decoder_optim": decoder_optim.state_dict(),
                 })
 
-    show_plot(plot_losses)
+    show_plot(plot_losses, save=True)
