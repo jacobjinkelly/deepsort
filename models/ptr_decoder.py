@@ -52,8 +52,9 @@ class PtrDecoder(nn.Module):
 
         attn_weights = F.log_softmax(self.out(F.tanh(self.attn(context))), dim=0)
 
-        # convert probability vector over inputs to probability vector over all possible outputs
-        output = torch.zeros(self.output_dim)
+        # convert log probability vector over inputs to log probability vector over all possible outputs
+        # outputs not present in output have probability 0, so log probability of -inf
+        output = torch.full((self.output_dim,), float("-inf"))
         for i in range(len(attn_weights)):
             output[encoder_inputs[i]] = attn_weights[i]
 
