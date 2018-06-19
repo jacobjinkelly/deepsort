@@ -14,7 +14,9 @@ def generate(size, max_val, min_length, max_length):
     with open("data/train.txt", mode='w') as file:
         file.write("|".join([str(size), str(max_val), str(max_length)]) + "\n")
         for j in range(size):
-            lst = np.random.randint(2, max_val, np.random.randint(min_length, max_length))
+            if j % 10000 == 0:
+                print(j)
+            lst = list(np.random.randint(2, max_val, np.random.randint(min_length, max_length)))
             srt = sorted(lst)
             file.write(str(lst) + "|" + str(srt) + "\n")
 
