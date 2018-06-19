@@ -33,7 +33,6 @@ def evaluate(encoder, decoder, input_tensor, is_ptr, max_length=MAX_LENGTH):
             decoder_output, decoder_hidden, decoder_attention = decoder(*args)
             # decoder_attentions[i] = decoder_attention.data
             topv, topi = decoder_output.data.topk(1)
-            print(decoded_output)
             if topi.item() == EOS_token:
                 decoded_output.append('<EOS>')
                 break
