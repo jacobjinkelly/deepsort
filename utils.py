@@ -3,6 +3,7 @@
 import math
 import os
 import time
+import re
 
 import torch
 
@@ -24,11 +25,11 @@ def set_max_length(max_length):
 
 def as_minutes(s):
     """
-    Returns the number of seconds in minutes.
+    Returns <s> seconds in (hours, minutes, seconds) format.
     """
-    m = math.floor(s / 60)
-    s -= m * 60
-    return '%dm %ds' % (m, s)
+    h, m = math.floor(s / 3600), math.floor(s / 60)
+    m, s = m - h * 60, s - m * 60
+    return '%dh %dm %ds' % (h, m, s)
 
 
 def time_since(since, percent):
@@ -58,17 +59,21 @@ def load_checkpoint():
     Load the most recent (i.e. greatest number of iterations) checkpoint file.
     """
     if os.path.isdir("checkpoints"):
-        max_iter = -1
-        max_iter_file = ""
+        max_epoch, max_batch = -1, -1
+        argmax_file = ""
         for file_name in os.listdir("checkpoints"):
             try:
-                iteration = int(file_name.split(".")[0])
-                if file_name.endswith("ckpt") and iteration > max_iter:
-                    max_iter = iteration
-                    max_iter_file = file_name
-            except ValueError:
+                pattern = re.compile(r"""e(?P<epoch>[\d]*)
+                                         b(?P<batch>[\d]*)
+                                         \.ckpt""", re.VERBOSE)
+                match = pattern.match(file_name)
+                epoch, batch = int(match.group("epoch")), int(match.group("batch"))
+                if epoch > max_epoch and batch > max_batch:
+                    max_epoch, max_batch = epoch, batch
+                    argmax_file = file_name
+            except (ValueError, AttributeError):
                 print("A file other than a checkpoint appears to be in the " +
                       "<checkpoints> folder; please remove it")
-        if max_iter > 0:
+        if max_epoch >= 0 and max_batch >= 0:
             print("Loading checkpoint file...")
-            return torch.load("checkpoints/" + max_iter_file)
+            return torch.load("checkpoints/" + argmax_file)
