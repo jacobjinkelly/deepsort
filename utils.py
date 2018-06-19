@@ -45,10 +45,10 @@ def time_since(since, percent):
 
 def save_checkpoint(state):
     """
-    Save a checkpoint of the current model weights, deleting old ones.
+    Save a checkpoint of the current model weights and optimizer state.
     """
-    epoch, batch = state["epoch"], state["batch"]
-    file_name = "checkpoints/" + "e" + str(epoch) + "b" + str(batch) + ".ckpt"
+    epoch, iteration = state["epoch"], state["iter"]
+    file_name = "checkpoints/" + "e" + str(epoch) + "i" + str(iteration) + ".ckpt"
     if not os.path.isdir("checkpoints"):
         os.mkdir("checkpoints")
     torch.save(state, file_name)
@@ -59,21 +59,20 @@ def load_checkpoint():
     Load the most recent (i.e. greatest number of iterations) checkpoint file.
     """
     if os.path.isdir("checkpoints"):
-        max_epoch, max_batch = -1, -1
+        max_epoch, max_iteration = -1, -1
         argmax_file = ""
         for file_name in os.listdir("checkpoints"):
             try:
                 pattern = re.compile(r"""e(?P<epoch>[\d]*)
-                                         b(?P<batch>[\d]*)
+                                         i(?P<iter>[\d]*)
                                          \.ckpt""", re.VERBOSE)
                 match = pattern.match(file_name)
-                epoch, batch = int(match.group("epoch")), int(match.group("batch"))
-                if epoch > max_epoch and batch > max_batch:
-                    max_epoch, max_batch = epoch, batch
+                epoch, iteration = int(match.group("epoch")), int(match.group("iter"))
+                if epoch > max_epoch and iteration > max_iteration:
+                    max_epoch, max_iteration = epoch, iteration
                     argmax_file = file_name
             except (ValueError, AttributeError):
-                print("A file other than a checkpoint appears to be in the " +
-                      "<checkpoints> folder; please remove it")
-        if max_epoch >= 0 and max_batch >= 0:
+                print("A file other than a checkpoint appears to be in the <checkpoints> folder; please remove it")
+        if max_epoch >= 0 and max_iteration >= 0:
             print("Loading checkpoint file...")
             return torch.load("checkpoints/" + argmax_file)
