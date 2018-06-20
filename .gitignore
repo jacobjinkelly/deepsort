@@ -1,6 +1,9 @@
 # Data #
 data/
 
+# Images #
+imgs/
+
 # Checkpoint Files #
 checkpoints/
 
@@ -8,8 +11,8 @@ checkpoints/
 __pycache__
 */__pycache__
 
-# IDE Generated Files #
+# IDE Generated #
 .idea/
 
-# OS Generated Files #
+# OS Generated #
 .DS_Store
