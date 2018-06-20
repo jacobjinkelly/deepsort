@@ -13,21 +13,28 @@ def str_to_array(lst):
     return [int(i) for i in temp]
 
 
-def read_data():
+def read_data(name, ewc=False):
     """
     Read in data from file.
     """
     print("Reading data...")
 
     # Read the file and split into lines
-    lines = open("data/train.txt").read().split('\n')
+    lines = open("data/" + name + ".txt").read().split('\n')
 
     size, max_val, max_length = [int(i) for i in lines[0].split("|")]
 
     # Split every line into input/target pairs
     pairs = [[str_to_array(lst) for lst in l.split("|")] for l in lines[1:-1]]
 
-    print("Found %s examples" % size)
+    tasks = [[] for _ in range(2, max_length + 1)]
+    if ewc:
+        for i in range(max_length - 1):
+            tasks[i] = pairs[i * size: (i + 1) * size]
+        pairs = tasks
+        print("Found %s examples" % (len(tasks) * size))
+    else:
+        print("Found %s examples" % size)
 
     return max_val, max_length, pairs
 
