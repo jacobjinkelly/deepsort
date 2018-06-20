@@ -1,35 +1,58 @@
 """The example experiment ran in the original tutorial.
 """
 
-import random
-
-from models.attn_decoder import AttnDecoder
-from models.encoder import Encoder
 from torch import optim
+import torch.nn as nn
 
 from data import read_data, tensors_from_pair
-from train import train_iters
+from models.attn_decoder import AttnDecoder
+from models.encoder import Encoder
+from train import train
 from utils import device, set_max_length
 
-max_val, max_length, pairs = read_data()
-n_iters = 3000
-learning_rate = 0.01
-data_dim = max_val + 1
-set_max_length(max_length)
-training_pairs = [tensors_from_pair(random.choice(pairs))
-                  for _ in range(n_iters)]
 
-hidden_dim = embedding_dim = 256
-encoder = Encoder(input_dim=data_dim,
-                  embedding_dim=embedding_dim,
-                  hidden_dim=hidden_dim).to(device)
-decoder = AttnDecoder(output_dim=data_dim,
-                      embedding_dim=embedding_dim,
-                      hidden_dim=hidden_dim).to(device)
-encoder_optim = optim.SGD(encoder.parameters(), lr=learning_rate)
-decoder_optim = optim.SGD(decoder.parameters(), lr=learning_rate)
+def weight_init(module):
+    """
+    Initialize weights of <module>. Applied recursivly over model weights via .apply()
+    """
+    for parameter in module.parameters():
+        nn.init.uniform_(parameter, -0.08, 0.08)
 
 
 def run():
-    train_iters(encoder, decoder, encoder_optim, decoder_optim, training_pairs,
-                n_iters)
+    """
+    Run the experiment.
+    """
+    max_val, max_length, pairs = read_data()
+
+    set_max_length(max_length)
+    training_pairs = [tensors_from_pair(pair) for pair in pairs]
+
+    data_dim = max_val + 1
+    hidden_dim = embedding_dim = 256
+    encoder = Encoder(input_dim=data_dim,
+                      embedding_dim=embedding_dim,
+                      hidden_dim=hidden_dim).to(device)
+    decoder = AttnDecoder(output_dim=data_dim,
+                          embedding_dim=embedding_dim,
+                          hidden_dim=hidden_dim).to(device)
+
+    n_epochs = 1
+    grad_clip = 2
+    teacher_force_ratio = 0.5
+    optimizer = optim.Adam
+    optimizer_params = {}
+
+    train(encoder=encoder,
+          decoder=decoder,
+          optim=optimizer,
+          optim_params=optimizer_params,
+          weight_init=weight_init,
+          grad_clip=grad_clip,
+          is_ptr=False,
+          training_pairs=training_pairs,
+          n_epochs=n_epochs,
+          teacher_force_ratio=teacher_force_ratio,
+          print_every=50,
+          plot_every=50,
+          save_every=100)
