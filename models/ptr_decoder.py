@@ -62,6 +62,6 @@ class PtrDecoder(nn.Module):
 
     def init_hidden(self):
         """
-        Initialize the weights of the decoder.
+        Initialize the hidden state of the decoder.
         """
         return torch.zeros(1, 1, self.hidden_dim, device=device)
