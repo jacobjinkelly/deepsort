@@ -6,11 +6,12 @@ import torch
 from utils import device, SOS_token, EOS_token, MAX_LENGTH
 
 
-# noinspection PyCallingNonCallable
+# noinspection PyCallingNonCallable,PyUnresolvedReferences
 def evaluate(encoder, decoder, input_tensor, is_ptr, max_length=MAX_LENGTH):
     """
     Perform inference using the model.
     """
+    encoder.eval(), decoder.eval()
     with torch.no_grad():
         input_length = input_tensor.size()[0]
         encoder_hidden = encoder.init_hidden()
@@ -31,7 +32,7 @@ def evaluate(encoder, decoder, input_tensor, is_ptr, max_length=MAX_LENGTH):
             if is_ptr:
                 args += (input_tensor,)
             decoder_output, decoder_hidden, decoder_attention = decoder(*args)
-            # decoder_attentions[i] = decoder_attention.data
+            decoder_attentions[i] = torch.squeeze(decoder_attention.data)
             topv, topi = decoder_output.data.topk(1)
             if topi.item() == EOS_token:
                 decoded_output.append('<EOS>')
@@ -39,6 +40,7 @@ def evaluate(encoder, decoder, input_tensor, is_ptr, max_length=MAX_LENGTH):
             else:
                 decoded_output.append(topi.item())
 
+            # detach from history as input
             decoder_input = topi.squeeze().detach()
 
         return decoded_output, decoder_attentions[:len(decoded_output) + 1]
