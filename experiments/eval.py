@@ -9,27 +9,26 @@ from models.ptr_decoder import PtrDecoder
 from models.encoder import Encoder
 from evaluate import evaluate
 
-max_val, max_length, pairs = read_data()
-np.random.shuffle(pairs)
-training_pairs = [tensors_from_pair(pair) for pair in pairs]
-
-data_dim = max_val + 1
-
-hidden_dim = embedding_dim = 256
-
-encoder = Encoder(input_dim=data_dim,
-                  embedding_dim=embedding_dim,
-                  hidden_dim=hidden_dim).to(device)
-decoder = PtrDecoder(output_dim=data_dim,
-                     embedding_dim=embedding_dim,
-                     hidden_dim=hidden_dim).to(device)
-
 
 def run():
     """
     Run the experiment.
     """
-    checkpoint = load_checkpoint()
+    max_val, max_length, pairs = read_data()
+    np.random.shuffle(pairs)
+    training_pairs = [tensors_from_pair(pair) for pair in pairs]
+
+    data_dim = max_val + 1
+    hidden_dim = embedding_dim = 256
+
+    encoder = Encoder(input_dim=data_dim,
+                      embedding_dim=embedding_dim,
+                      hidden_dim=hidden_dim).to(device)
+    decoder = PtrDecoder(output_dim=data_dim,
+                         embedding_dim=embedding_dim,
+                         hidden_dim=hidden_dim).to(device)
+
+    checkpoint = load_checkpoint("ptr")
     if checkpoint:
         encoder.load_state_dict(checkpoint["encoder"])
         decoder.load_state_dict(checkpoint["decoder"])
