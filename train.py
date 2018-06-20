@@ -11,10 +11,88 @@ from utils import device, SOS_token, EOS_token, time_since, save_checkpoint, loa
 from visual import show_plot
 
 
+# surpress warning of math.floor() returning a float. In Python 3 returns it returns an int.
+# noinspection PyTypeChecker
+def train(encoder, decoder, optim, optim_params, weight_init, grad_clip, is_ptr, training_pairs, n_epochs,
+          teacher_force_ratio, print_every, plot_every, save_every):
+    """
+    The training loop.
+    """
+    encoder_optim = optim(encoder.parameters(), **optim_params)
+    decoder_optim = optim(decoder.parameters(), **optim_params)
+
+    checkpoint = load_checkpoint("ptr" if is_ptr else "vanilla")
+    if checkpoint:
+        start_epoch = checkpoint["epoch"]
+        first_iter = checkpoint["iter"]
+        plot_losses = checkpoint["plot_losses"]
+        print_loss_total = checkpoint["print_loss_total"]
+        plot_loss_total = checkpoint["plot_loss_total"]
+        encoder.load_state_dict(checkpoint["encoder"])
+        decoder.load_state_dict(checkpoint["decoder"])
+        encoder_optim.load_state_dict(checkpoint["encoder_optim"])
+        decoder_optim.load_state_dict(checkpoint["decoder_optim"])
+    else:
+        start_epoch = 0
+        first_iter = 0
+        plot_losses = []
+        print_loss_total = 0  # Reset every print_every
+        plot_loss_total = 0  # Reset every plot_every
+        encoder.apply(weight_init)  # initialize weights
+        decoder.apply(weight_init)  # initialize weights
+
+    criterion = nn.NLLLoss()
+
+    size, n_iters = len(training_pairs), n_epochs * len(training_pairs)
+    current_iter = start_epoch * size + first_iter
+    start = time.time()
+    for epoch in range(start_epoch, n_epochs):
+        np.random.shuffle(training_pairs)
+        start_iter = first_iter if epoch == start_epoch else 0
+        for i in range(start_iter, size):
+            loss = train_step(training_pairs[i], encoder, decoder, encoder_optim, decoder_optim, is_ptr, criterion,
+                              teacher_force_ratio, grad_clip)
+            print_loss_total += loss
+            plot_loss_total += loss
+            current_iter += 1
+
+            if current_iter % print_every == 0:
+                print_loss_avg, print_loss_total = print_loss_total / print_every, 0
+                print('%s (epoch: %d iter: %d %d%%) %.4f' % (time_since(start, current_iter / n_iters),
+                                                             epoch, i + 1,
+                                                             current_iter / n_iters * 100,
+                                                             print_loss_avg))
+
+            if current_iter % plot_every == 0:
+                plot_loss_avg, plot_loss_total = plot_loss_total / plot_every, 0
+                plot_losses.append(plot_loss_avg)
+
+            if current_iter % save_every == 0:
+                if i + 1 < size:
+                    save_epoch = epoch
+                    save_iter = i + 1
+                else:
+                    save_epoch = epoch + 1
+                    save_iter = 0
+                save_checkpoint({
+                    "epoch": save_epoch,
+                    "iter": save_iter,
+                    "plot_losses": plot_losses,
+                    "print_loss_total": print_loss_total,
+                    "plot_loss_total": plot_loss_total,
+                    "encoder": encoder.state_dict(),
+                    "decoder": decoder.state_dict(),
+                    "encoder_optim": encoder_optim.state_dict(),
+                    "decoder_optim": decoder_optim.state_dict(),
+                }, "ptr" if is_ptr else "vanilla")
+
+    show_plot(plot_losses, save=True)
+
+
 # ignore noncallable/unresolvedreferences errors for torch.tensor, torch.unsqueeze respectively (bug in PyTorch)
 # noinspection PyCallingNonCallable,PyUnresolvedReferences
-def train(training_pair, encoder, decoder, encoder_optim, decoder_optim, is_ptr, criterion, teacher_force_ratio,
-          grad_clip):
+def train_step(training_pair, encoder, decoder, encoder_optim, decoder_optim, is_ptr, criterion, teacher_force_ratio,
+               grad_clip):
     """
     One step in the training loop.
     """
@@ -61,78 +139,3 @@ def train(training_pair, encoder, decoder, encoder_optim, decoder_optim, is_ptr,
     decoder_optim.step()
 
     return loss.item() / target_length
-
-
-# surpress warning of math.floor() returning a float. In Python 3 returns it returns an int.
-# noinspection PyTypeChecker
-def train_iters(encoder, decoder, optim, optim_params, weight_init, grad_clip, is_ptr, training_pairs, n_epochs,
-                teacher_force_ratio, print_every, plot_every, save_every):
-    """
-    The training loop.
-    """
-    encoder_optim = optim(encoder.parameters(), **optim_params)
-    decoder_optim = optim(decoder.parameters(), **optim_params)
-
-    checkpoint = load_checkpoint()
-    if checkpoint:
-        start_epoch = checkpoint["epoch"]
-        first_iter = checkpoint["iter"]
-        plot_losses = checkpoint["plot_losses"]
-        print_loss_total = checkpoint["print_loss_total"]
-        plot_loss_total = checkpoint["plot_loss_total"]
-        encoder.load_state_dict(checkpoint["encoder"])
-        decoder.load_state_dict(checkpoint["decoder"])
-        encoder_optim.load_state_dict(checkpoint["encoder_optim"])
-        decoder_optim.load_state_dict(checkpoint["decoder_optim"])
-    else:
-        start_epoch = 0
-        first_iter = 0
-        encoder.apply(weight_init)  # initialize weights
-        decoder.apply(weight_init)  # initialize weights
-        plot_losses = []
-        print_loss_total = 0        # Reset every print_every
-        plot_loss_total = 0         # Reset every plot_every
-
-    criterion = nn.NLLLoss()
-
-    size, n_iters = len(training_pairs), n_epochs * len(training_pairs)
-
-    start = time.time()
-    for epoch in range(start_epoch, n_epochs):
-        np.random.shuffle(training_pairs)
-        start_iter = first_iter if epoch == start_epoch else 0
-        for i in range(start_iter, size):
-            loss = train(training_pairs[i], encoder, decoder, encoder_optim, decoder_optim, is_ptr, criterion,
-                         teacher_force_ratio, grad_clip)
-            print_loss_total += loss
-            plot_loss_total += loss
-
-            current_iter = size * epoch + i + 1
-
-            if current_iter % print_every == 0:
-                print_loss_avg = print_loss_total / print_every
-                print_loss_total = 0
-                print('%s (epoch: %d iter: %d %d%%) %.4f' % (time_since(start, current_iter / n_iters),
-                                                             epoch, i + 1,
-                                                             current_iter / n_iters * 100,
-                                                             print_loss_avg))
-
-            if current_iter % plot_every == 0:
-                plot_loss_avg = plot_loss_total / plot_every
-                plot_loss_total = 0
-                plot_losses.append(plot_loss_avg)
-
-            if current_iter % save_every == 0:
-                save_checkpoint({
-                    "epoch": epoch if i + 1 < size else epoch + 1,
-                    "iter": i + 1,
-                    "plot_losses": plot_losses,
-                    "print_loss_total": print_loss_total,
-                    "plot_loss_total": plot_loss_total,
-                    "encoder": encoder.state_dict(),
-                    "decoder": decoder.state_dict(),
-                    "encoder_optim": encoder_optim.state_dict(),
-                    "decoder_optim": decoder_optim.state_dict(),
-                })
-
-    show_plot(plot_losses, save=True)
