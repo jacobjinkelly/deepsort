@@ -8,7 +8,7 @@ import matplotlib.ticker as ticker
 from evaluate import evaluate
 
 
-def show_plot(points, save=False):
+def show_plot(points, save=False, name="plot"):
     """
     Show a scatter plot of the given points.
     """
@@ -21,7 +21,7 @@ def show_plot(points, save=False):
     if save:
         if not os.path.isdir("imgs"):
             os.mkdir("imgs")
-        plt.savefig("imgs/plot.jpg")
+        plt.savefig("imgs/" + name + ".jpg")
     plt.show()
 
 
