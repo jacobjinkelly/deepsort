@@ -43,25 +43,27 @@ def time_since(since, percent):
     return '%s (- %s)' % (as_minutes(s), as_minutes(rs))
 
 
-def save_checkpoint(state):
+def save_checkpoint(state, model):
     """
     Save a checkpoint of the current model weights and optimizer state.
     """
     epoch, iteration = state["epoch"], state["iter"]
-    file_name = "checkpoints/" + "e" + str(epoch) + "i" + str(iteration) + ".ckpt"
-    if not os.path.isdir("checkpoints"):
-        os.mkdir("checkpoints")
+    root_dir = os.path.join("checkpoints", model)
+    file_name = os.path.join(root_dir, "e" + str(epoch) + "i" + str(iteration) + ".ckpt")
+    if not os.path.isdir(root_dir):
+        os.mkdir(root_dir)
     torch.save(state, file_name)
 
 
-def load_checkpoint():
+def load_checkpoint(model):
     """
     Load the most recent (i.e. greatest number of iterations) checkpoint file.
     """
-    if os.path.isdir("checkpoints"):
+    root_dir = os.path.join("checkpoints", model)
+    if os.path.isdir(root_dir):
         max_epoch, max_iteration = -1, -1
         argmax_file = ""
-        for file_name in os.listdir("checkpoints"):
+        for file_name in os.listdir(root_dir):
             try:
                 pattern = re.compile(r"""e(?P<epoch>[\d]*)
                                          i(?P<iter>[\d]*)
@@ -72,7 +74,7 @@ def load_checkpoint():
                     max_epoch, max_iteration = epoch, iteration
                     argmax_file = file_name
             except (ValueError, AttributeError):
-                print("A file other than a checkpoint appears to be in the <checkpoints> folder; please remove it")
+                print("A file other than a checkpoint appears to be in the checkpoints folder; please remove it")
         if max_epoch >= 0 and max_iteration >= 0:
             print("Loading checkpoint file...")
-            return torch.load("checkpoints/" + argmax_file)
+            return torch.load(os.path.join(root_dir, argmax_file))
