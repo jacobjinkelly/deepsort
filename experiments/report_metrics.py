@@ -54,7 +54,7 @@ def run():
         target, output = list(np.asarray(input_tensor.data).squeeze()), output_tensor[:-1]
         if is_permutation(target, output):
             permutation_count += 1
-        if nondecreasing(output):
+        if nondecreasing(output) == 0:
             nondecreasing_count += 1
     print("Permutation: %s" % (permutation_count / len(training_pairs)))
     print("Nondecreasing: %s" % (nondecreasing_count / len(training_pairs)))
