@@ -35,8 +35,9 @@ After training the model on `train.txt`, use [generate.py](https://github.com/ja
 The same as for evaluation, run [experiments/reproduce.py]() via `python main.py`, and you should see similar results.
 ```
 Permutation: 0.0
-Nondecreasing: 0.907
+Nondecreasing: 0.093
 ```
+(note: I did very minimal fine-tuning, and a very short training scheme, so it is quite likely performance could exceed this)
 Change `RANDOM_SEED` in [utils.py](https://github.com/jacobjinkelly/deepsort/blob/master/utils.py/#L20) to try a different shuffle (one could also generate a new dataset and train again.)
 
 ## Issues and Improvements
