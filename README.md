@@ -32,10 +32,15 @@ Training for 1 epoch on the dataset generated from the example call above took a
 After training the model on `train.txt`, use [generate.py](https://github.com/jacobjinkelly/deepsort/blob/master/generate.py) to generate a test set (with `name="test"`), then run [experiments/evaluate.py](https://github.com/jacobjinkelly/deepsort/blob/master/experiments/evaluate.py) in the same way as was described for [experiments/train.py](https://github.com/jacobjinkelly/deepsort/blob/master/experiments/train.py) above to see some example evaluation of the model.
 
 ### Reproducing Results
-The same as for evaluation, run [experiments/reproduce.py]() via `python main.py`, and you should see similar results.
+The same as for evaluation, run [experiments/reproduce.py]() via `python main.py`, and you should see similar results (for pointer).
 ```
 Permutation: 0.0
 Nondecreasing: 0.093
+```
+(for vanilla attention decoder)
+```
+Permutation: 0.0
+Nondecreasing: 0.653
 ```
 (note: I did very minimal fine-tuning, and a very short training scheme, so it is quite likely performance could exceed this)
 Change `RANDOM_SEED` in [utils.py](https://github.com/jacobjinkelly/deepsort/blob/master/utils.py/#L20) to try a different shuffle (one could also generate a new dataset and train again.)
