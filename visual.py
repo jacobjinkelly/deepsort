@@ -8,8 +8,6 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from evaluate import evaluate
-
 
 def show_plot(points, save=False, name="plot"):
     """
@@ -26,38 +24,3 @@ def show_plot(points, save=False, name="plot"):
             os.mkdir("imgs")
         plt.savefig("imgs/" + name + ".jpg")
     plt.show()
-
-
-def show_attention(input_sentence, output_words, attentions):
-    """
-    Render a visualization of the attention mechanism on the inputs.
-    """
-    # Set up figure with colorbar
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    cax = ax.matshow(attentions.numpy(), cmap='bone')
-    fig.colorbar(cax)
-
-    # Set up axes
-    ax.set_xticklabels([''] + input_sentence.split(' ') +
-                       ['<EOS>'], rotation=90)
-    ax.set_yticklabels([''] + output_words)
-
-    # Show label at every tick
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
-
-    plt.show()
-
-
-def evaluate_and_show_attention(input_tensor, encoder, decoder, is_ptr):
-    """
-    Do inference on an input, and display a visualization of the attention mechanism.
-    """
-    output_words, attentions = evaluate(encoder=encoder,
-                                        decoder=decoder,
-                                        input_tensor=input_tensor,
-                                        is_ptr=is_ptr)
-    print('input =', input_tensor)
-    print('output =', ' '.join(output_words))
-    show_attention(input_tensor, output_words, attentions)
