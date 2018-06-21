@@ -56,5 +56,5 @@ def run():
             permutation_count += 1
         if nondecreasing(output):
             nondecreasing_count += 1
-    print("Permutation: %s" % permutation_count / len(training_pairs))
-    print("Nondecreasing: %s" % nondecreasing_count / len(training_pairs))
+    print("Permutation: %s" % (permutation_count / len(training_pairs)))
+    print("Nondecreasing: %s" % (nondecreasing_count / len(training_pairs)))
