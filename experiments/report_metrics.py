@@ -16,7 +16,7 @@ def run():
     """
     Run the experiment.
     """
-    is_ptr = True
+    is_ptr = False
     np.random.seed(RANDOM_SEED)
     max_val, max_length, pairs = read_data(name="test")
     np.random.shuffle(pairs)
@@ -47,10 +47,10 @@ def run():
     permutation_count, nondecreasing_count = 0, 0
     for i in range(len(training_pairs)):
         input_tensor, target_tensor = training_pairs[i]
-        output_tensor, _ = evaluate(encoder=encoder,
-                                    decoder=decoder,
-                                    input_tensor=training_pairs[i][0],
-                                    is_ptr=True)
+        output_tensor = evaluate(encoder=encoder,
+                                 decoder=decoder,
+                                 input_tensor=training_pairs[i][0],
+                                 is_ptr=is_ptr)
         target, output = list(np.asarray(input_tensor.data).squeeze()), output_tensor[:-1]
         if is_permutation(target, output):
             permutation_count += 1

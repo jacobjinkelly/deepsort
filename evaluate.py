@@ -29,14 +29,12 @@ def evaluate(encoder, decoder, input_tensor, is_ptr, max_length=MAX_LENGTH):
         decoder_input, decoder_hidden = torch.tensor([[SOS_token]], device=device), encoder_hidden
 
         decoded_output = []
-        decoder_attentions = torch.zeros(max_length, input_length)
 
         for i in range(max_length):
             args = (decoder_input, decoder_hidden, encoder_outputs)
             if is_ptr:
                 args += (input_tensor,)
             decoder_output, decoder_hidden, decoder_attention = decoder(*args)
-            decoder_attentions[i] = torch.squeeze(decoder_attention.data)
             topv, topi = decoder_output.data.topk(1)
             if topi.item() == EOS_token:
                 decoded_output.append('<EOS>')
@@ -47,4 +45,4 @@ def evaluate(encoder, decoder, input_tensor, is_ptr, max_length=MAX_LENGTH):
             # detach from history as input
             decoder_input = topi.squeeze().detach()
 
-        return decoded_output, decoder_attentions[:len(decoded_output) + 1]
+        return decoded_output

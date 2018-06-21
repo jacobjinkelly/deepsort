@@ -45,8 +45,8 @@ def run():
 
     for i in range(10):
         input_tensor, target_tensor = training_pairs[i]
-        output_tensor, _ = evaluate(encoder=encoder,
-                                    decoder=decoder,
-                                    input_tensor=training_pairs[i][0],
-                                    is_ptr=True)
+        output_tensor = evaluate(encoder=encoder,
+                                 decoder=decoder,
+                                 input_tensor=training_pairs[i][0],
+                                 is_ptr=is_ptr)
         print(list(np.asarray(input_tensor.data).squeeze()), output_tensor[:-1])
