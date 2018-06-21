@@ -14,7 +14,7 @@ def run():
     """
     Run the experiment.
     """
-    max_val, max_length, pairs = read_data(name="train")
+    max_val, max_length, pairs = read_data(name="val")
     np.random.shuffle(pairs)
     training_pairs = [tensors_from_pair(pair) for pair in pairs]
 

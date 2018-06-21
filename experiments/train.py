@@ -1,4 +1,5 @@
-"""Simple experiment for ptr networks.
+"""
+Train the network.
 """
 
 import torch.nn as nn
