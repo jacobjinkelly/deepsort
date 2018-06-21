@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from utils import device, SOS_token, EOS_token, time_since, save_checkpoint, load_checkpoint
+from utils import device, SOS_token, EOS_token, time_since, save_checkpoint, load_checkpoint, RANDOM_SEED
 from visual import show_plot
 
 
@@ -21,6 +21,7 @@ def train(encoder, decoder, optim, optim_params, weight_init, grad_clip, is_ptr,
     """
     The training loop.
     """
+    np.random.seed(RANDOM_SEED), torch.manual_seed(RANDOM_SEED)
     encoder.train(), decoder.train()
     encoder_optim = optim(encoder.parameters(), **optim_params)
     decoder_optim = optim(decoder.parameters(), **optim_params)

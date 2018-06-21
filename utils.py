@@ -17,6 +17,8 @@ EOS_token = 1
 
 MAX_LENGTH = 16
 
+RANDOM_SEED = 0
+
 
 def set_max_length(max_length):
     """
