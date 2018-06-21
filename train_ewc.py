@@ -1,5 +1,7 @@
 """
 Training a model using the EWC method.
+
+Modified from https://github.com/moskomule/ewc.pytorch
 """
 import random
 import time
@@ -11,8 +13,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from data import tensors_from_pair
-from evaluate import evaluate
 from utils import SOS_token, device, EOS_token, time_since, save_checkpoint, load_checkpoint
 
 

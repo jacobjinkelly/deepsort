@@ -1,4 +1,5 @@
-"""This module generates the data for the sorting task.
+"""
+This module generates the data for the sorting task.
 """
 import os
 import numpy as np

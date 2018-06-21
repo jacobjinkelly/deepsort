@@ -1,4 +1,5 @@
-"""Parses commmand line arguments for generate.py
+"""
+Parses commmand line arguments for generate.py
 """
 
 import argparse

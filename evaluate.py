@@ -1,4 +1,7 @@
-"""For performing inference using the model.
+"""
+For performing inference using the model.
+
+Modified from https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
 """
 
 import torch

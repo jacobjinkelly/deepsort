@@ -1,4 +1,7 @@
-"""For downloading and processing data.
+"""
+For processing data.
+
+Modified from https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
 """
 import torch
 

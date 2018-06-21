@@ -1,4 +1,7 @@
-"""A simple decoder in the seq2seq model using a gated recurrent unit (GRU).
+"""
+A simple decoder in the seq2seq model using a gated recurrent unit (GRU).
+
+Modified from https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
 """
 import torch
 import torch.nn as nn
@@ -9,6 +12,9 @@ from utils import device
 
 # noinspection PyShadowingBuiltins
 class Decoder(nn.Module):
+    """
+    A plain decoder.
+    """
     def __init__(self, output_dim,
                  embedding_dim,
                  hidden_dim,
@@ -28,6 +34,9 @@ class Decoder(nn.Module):
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, input, hidden):
+        """
+        Forward pass of the decoder model.
+        """
         embedded = self.embedding(input).view(1, 1, -1)
         output, hidden = self.lstm(input=F.relu(embedded),
                                    h_0=hidden)
@@ -35,4 +44,7 @@ class Decoder(nn.Module):
         return output, hidden
 
     def init_hidden(self):
+        """
+        Initialize the hidden state of the decoder.
+        """
         return torch.zeros(1, 1, self.hidden_size, device=device)

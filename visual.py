@@ -1,4 +1,7 @@
-"""For creating visualizations.
+"""
+For creating visualizations.
+
+Modified from https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
 """
 import os
 
@@ -47,12 +50,14 @@ def show_attention(input_sentence, output_words, attentions):
     plt.show()
 
 
-def evaluate_and_show_attention(input_sentence, encoder, decoder):
+def evaluate_and_show_attention(input_tensor, encoder, decoder, is_ptr):
     """
     Do inference on an input, and display a visualization of the attention mechanism.
     """
-    output_words, attentions = evaluate(
-        encoder, decoder, input_sentence)
-    print('input =', input_sentence)
+    output_words, attentions = evaluate(encoder=encoder,
+                                        decoder=decoder,
+                                        input_tensor=input_tensor,
+                                        is_ptr=is_ptr)
+    print('input =', input_tensor)
     print('output =', ' '.join(output_words))
-    show_attention(input_sentence, output_words, attentions)
+    show_attention(input_tensor, output_words, attentions)
