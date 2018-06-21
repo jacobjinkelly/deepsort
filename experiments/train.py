@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch import optim
 
 from data import read_data, tensors_from_pair
+from models.attn_decoder import AttnDecoder
 from models.encoder import Encoder
 from models.ptr_decoder import PtrDecoder
 from train import train
@@ -23,25 +24,32 @@ def run():
     """
     Run the experiment.
     """
-    max_val, max_length, pairs = read_data(name="train",
-                                           ewc=False)
-
-    set_max_length(max_length)
-    training_pairs = [tensors_from_pair(pair) for pair in pairs]
-
-    data_dim = max_val + 1
+    name = "train"
+    is_ptr = True
     hidden_dim = embedding_dim = 256
-    encoder = Encoder(input_dim=data_dim,
-                      embedding_dim=embedding_dim,
-                      hidden_dim=hidden_dim).to(device)
-    decoder = PtrDecoder(output_dim=data_dim,
-                         embedding_dim=embedding_dim,
-                         hidden_dim=hidden_dim).to(device)
     n_epochs = 1
     grad_clip = 2
     teacher_force_ratio = 0.5
     optimizer = optim.Adam
     optimizer_params = {}
+
+    max_val, max_length, pairs = read_data(name)
+
+    set_max_length(max_length)
+    training_pairs = [tensors_from_pair(pair) for pair in pairs]
+
+    data_dim = max_val + 1
+    encoder = Encoder(input_dim=data_dim,
+                      embedding_dim=embedding_dim,
+                      hidden_dim=hidden_dim).to(device)
+    if is_ptr:
+        decoder = PtrDecoder(output_dim=data_dim,
+                             embedding_dim=embedding_dim,
+                             hidden_dim=hidden_dim).to(device)
+    else:
+        decoder = AttnDecoder(output_dim=data_dim,
+                              embedding_dim=embedding_dim,
+                              hidden_dim=hidden_dim).to(device)
 
     train(encoder=encoder,
           decoder=decoder,
