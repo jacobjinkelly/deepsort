@@ -4,17 +4,20 @@ Evaluate the model.
 import numpy as np
 
 from data import read_data, tensors_from_pair
-from utils import load_checkpoint, device
-from models.ptr_decoder import PtrDecoder
-from models.encoder import Encoder
 from evaluate import evaluate
+from models.attn_decoder import AttnDecoder
+from models.encoder import Encoder
+from models.ptr_decoder import PtrDecoder
+from utils import load_checkpoint, device, RANDOM_SEED
 
 
 def run():
     """
     Run the experiment.
     """
-    max_val, max_length, pairs = read_data(name="val")
+    is_ptr = True
+    np.random.seed(RANDOM_SEED)
+    max_val, max_length, pairs = read_data(name="test")
     np.random.shuffle(pairs)
     training_pairs = [tensors_from_pair(pair) for pair in pairs]
 
@@ -24,11 +27,16 @@ def run():
     encoder = Encoder(input_dim=data_dim,
                       embedding_dim=embedding_dim,
                       hidden_dim=hidden_dim).to(device)
-    decoder = PtrDecoder(output_dim=data_dim,
-                         embedding_dim=embedding_dim,
-                         hidden_dim=hidden_dim).to(device)
+    if is_ptr:
+        decoder = PtrDecoder(output_dim=data_dim,
+                             embedding_dim=embedding_dim,
+                             hidden_dim=hidden_dim).to(device)
+    else:
+        decoder = AttnDecoder(output_dim=data_dim,
+                              embedding_dim=embedding_dim,
+                              hidden_dim=hidden_dim).to(device)
 
-    checkpoint = load_checkpoint("ptr")
+    checkpoint = load_checkpoint("ptr" if is_ptr else "vanilla")
     if checkpoint:
         encoder.load_state_dict(checkpoint["encoder"])
         decoder.load_state_dict(checkpoint["decoder"])
